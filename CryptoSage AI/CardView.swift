@@ -8,12 +8,11 @@
 
 import SwiftUI
 
-@available(iOS 16.0, *)
 struct CardView<Content: View>: View {
     let content: Content
     var cornerRadius: CGFloat = 8
     var paddingAmount: CGFloat = 8
-
+    
     init(cornerRadius: CGFloat = 8,
          paddingAmount: CGFloat = 8,
          @ViewBuilder content: () -> Content) {
@@ -21,7 +20,7 @@ struct CardView<Content: View>: View {
         self.paddingAmount = paddingAmount
         self.content = content()
     }
-
+    
     var body: some View {
         VStack {
             content

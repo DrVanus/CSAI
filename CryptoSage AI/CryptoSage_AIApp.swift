@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-@available(iOS 16.0, *)
 @main
 struct CryptoSage_AIApp: App {
     @StateObject private var appState = AppState()

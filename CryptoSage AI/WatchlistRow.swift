@@ -8,10 +8,9 @@
 
 import SwiftUI
 
-@available(iOS 16.0, *)
 struct WatchlistRow: View {
     let item: MarketItem
-
+    
     var body: some View {
         HStack {
             Text(item.symbol)
@@ -27,7 +26,7 @@ struct WatchlistRow: View {
         }
         .padding(.vertical, 4)
     }
-
+    
     func formatPrice(_ price: Double, symbol: String) -> String {
         let upper = symbol.uppercased()
         if upper.contains("BTC") || upper.contains("ETH") || upper.contains("SOL") {

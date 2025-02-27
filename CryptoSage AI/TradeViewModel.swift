@@ -8,7 +8,6 @@
 import Foundation
 import Combine
 
-@available(iOS 16.0, *)
 class TradeViewModel: ObservableObject {
     @Published var selectedSymbol: String = "BTC-USD"
     @Published var side: String = "Buy"

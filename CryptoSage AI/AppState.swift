@@ -7,13 +7,11 @@
 
 import SwiftUI
 
-@available(iOS 16.0, *)
 class AppState: ObservableObject {
     @Published var selectedTab: CustomTab = .home
     @Published var isDarkMode: Bool = true
 }
 
-@available(iOS 16.0, *)
 enum CustomTab: String {
     case home      = "Home"
     case market    = "Market"

@@ -6,18 +6,13 @@
 //
 
 import SwiftUI
-import WebKit
-import Foundation
-import Speech
-import AVFoundation
 
-@available(iOS 16.0, *)
 struct ContentManagerView: View {
     @EnvironmentObject var appState: AppState
     
-    @StateObject private var homeVM   = HomeViewModel()
+    @StateObject private var homeVM = HomeViewModel()
     @StateObject private var marketVM = MarketViewModel()
-    @StateObject private var tradeVM  = TradeViewModel()
+    @StateObject private var tradeVM = TradeViewModel()
     
     var body: some View {
         ZStack {
@@ -26,8 +21,7 @@ struct ContentManagerView: View {
                 HomeView(viewModel: homeVM, marketVM: marketVM, tradeVM: tradeVM) {
                     homeVM.showSettings.toggle()
                 }
-                .sheet(isPresented: Binding(get: { homeVM.showSettings },
-                                            set: { homeVM.showSettings = $0 })) {
+                .sheet(isPresented: Binding(get: { homeVM.showSettings }, set: { homeVM.showSettings = $0 })) {
                     NavigationView {
                         SettingsView()
                             .environmentObject(homeVM)
@@ -35,21 +29,16 @@ struct ContentManagerView: View {
                     }
                     .presentationDetents([.medium, .large])
                 }
-                
             case .market:
                 MarketView(marketVM: marketVM, homeVM: homeVM, tradeVM: tradeVM)
-                
             case .trade:
                 TradeView(tradeVM: tradeVM)
-                
             case .portfolio:
                 PortfolioView()
-                
             case .ai:
-                AITabView()
+                AITabView(homeVM: homeVM)
             }
             
-            // Custom bottom tab bar
             VStack {
                 Spacer()
                 CustomTabBar()

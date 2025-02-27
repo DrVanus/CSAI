@@ -8,10 +8,9 @@
 
 import SwiftUI
 
-@available(iOS 16.0, *)
 struct TrendingCard: View {
     let item: MarketItem
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(item.symbol)

@@ -7,10 +7,8 @@
 
 import SwiftUI
 
-@available(iOS 16.0, *)
 struct TradeView: View {
     @ObservedObject var tradeVM: TradeViewModel
-    
     @State private var showAdvancedTrading = false
     
     var body: some View {
@@ -18,56 +16,66 @@ struct TradeView: View {
             ZStack {
                 Color.black.ignoresSafeArea()
                 ScrollView {
-                    VStack(spacing: 10) {
-                        Text("Trade Tab")
+                    VStack(spacing: 16) {
+                        Text("Trade \(tradeVM.selectedSymbol)")
                             .font(.title2)
                             .foregroundColor(.white)
-                            .padding(.top, 10)
-                        
-                        // Example placeholders for order forms, TAs, etc.
-                        Text("Selected Symbol: \(tradeVM.selectedSymbol)")
-                            .foregroundColor(.white)
-                        TextField("Limit Price", text: $tradeVM.limitPrice)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.decimalPad)
-                        
-                        // Fraction buttons
                         HStack {
-                            ForEach([0.25, 0.5, 0.75, 1.0], id: \.self) { fraction in
-                                Button("\(Int(fraction*100))%") {
-                                    tradeVM.applyFraction(fraction)
-                                }
-                                .foregroundColor(.white)
-                                .padding(6)
-                                .background(Color.gray.opacity(0.3))
-                                .cornerRadius(8)
+                            Picker("Side", selection: $tradeVM.side) {
+                                Text("Buy").tag("Buy")
+                                Text("Sell").tag("Sell")
                             }
+                            .pickerStyle(SegmentedPickerStyle())
                         }
-                        
+                        HStack {
+                            Picker("Order Type", selection: $tradeVM.orderType) {
+                                Text("Market").tag("Market")
+                                Text("Limit").tag("Limit")
+                                Text("Stop-Limit").tag("Stop-Limit")
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                        }
+                        if tradeVM.orderType == "Limit" || tradeVM.orderType == "Stop-Limit" {
+                            TextField("Limit Price", text: $tradeVM.limitPrice)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .keyboardType(.decimalPad)
+                        }
+                        if tradeVM.orderType == "Stop-Limit" {
+                            TextField("Stop Price", text: $tradeVM.stopPrice)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .keyboardType(.decimalPad)
+                        }
+                        if tradeVM.orderType == "Stop-Limit" {
+                            TextField("Trailing Stop", text: $tradeVM.trailingStop)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .keyboardType(.decimalPad)
+                        }
+                        HStack {
+                            Text("Quantity: \(tradeVM.quantity)")
+                                .foregroundColor(.white)
+                            Button("Set 50%") {
+                                tradeVM.applyFraction(0.5)
+                            }
+                            .padding(6)
+                            .background(Color.gray.opacity(0.3))
+                            .cornerRadius(8)
+                        }
                         Button("Submit Order") {
                             tradeVM.submitOrder()
                         }
-                        .foregroundColor(.white)
-                        .padding(6)
+                        .padding()
                         .background(tradeVM.side == "Buy" ? Color.green : Color.red)
                         .cornerRadius(8)
-                        
                         if !tradeVM.aiSuggestion.isEmpty {
                             Text(tradeVM.aiSuggestion)
                                 .foregroundColor(.yellow)
-                                .font(.subheadline)
                         }
-                        
                         Toggle("Show Advanced Trading", isOn: $showAdvancedTrading)
-                            .padding(.horizontal)
                             .foregroundColor(.white)
-                        
                         if showAdvancedTrading {
-                            Text("Placeholder for advanced order book, depth chart, etc.")
+                            Text("Advanced trading features coming soon...")
                                 .foregroundColor(.gray)
-                                .padding()
                         }
-                        
                         Spacer().frame(height: 80)
                     }
                     .padding()

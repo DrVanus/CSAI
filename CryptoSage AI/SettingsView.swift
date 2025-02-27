@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-@available(iOS 16.0, *)
 struct SettingsView: View {
     @EnvironmentObject var homeVM: HomeViewModel
     @EnvironmentObject var appState: AppState
@@ -34,10 +33,8 @@ struct SettingsView: View {
     }
 }
 
-@available(iOS 16.0, *)
 struct WalletsView: View {
     @EnvironmentObject var homeVM: HomeViewModel
-    
     @State private var newLabel   = ""
     @State private var newAddress = ""
     
@@ -47,19 +44,18 @@ struct WalletsView: View {
                 .font(.title2)
                 .foregroundColor(.white)
                 .padding(.top, 10)
-            
             if homeVM.userWallets.isEmpty {
                 Text("No wallets yet.")
                     .foregroundColor(.gray)
                     .padding(.top, 8)
             } else {
                 List {
-                    ForEach(homeVM.userWallets) { w in
+                    ForEach(homeVM.userWallets) { wallet in
                         VStack(alignment: .leading) {
-                            Text(w.label)
+                            Text(wallet.label)
                                 .foregroundColor(.white)
                                 .font(.headline)
-                            Text(w.address)
+                            Text(wallet.address)
                                 .foregroundColor(.gray)
                                 .font(.footnote)
                         }

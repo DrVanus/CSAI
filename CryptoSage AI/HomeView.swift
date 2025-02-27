@@ -7,66 +7,42 @@
 
 import SwiftUI
 
-@available(iOS 16.0, *)
 struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     @ObservedObject var marketVM: MarketViewModel
     let tradeVM: TradeViewModel?
     let onOpenSettings: () -> Void
     
-    @State private var showNewsWeb = false
-    @State private var newsURL: URL? = nil
-    
-    @State private var trendingDetailCoin: CoinGeckoCoin? = nil
+    @State private var userInput: String = ""
+    @FocusState private var isInputFocused: Bool
     
     var body: some View {
         NavigationView {
             ZStack {
                 Color.black.ignoresSafeArea()
                 ScrollView {
-                    VStack(spacing: 12) {
+                    VStack(spacing: 16) {
                         heroSection
                         portfolioSummaryCard
                         trendingSection
-                        
                         watchlistSection
-                        topGainersSection
+                        chatSection
                         newsSection
-                        
                         Spacer().frame(height: 80)
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 10)
-                }
-                .refreshable {
-                    viewModel.refreshWatchlistData()
-                    viewModel.fetchNews()
-                    viewModel.fetchTrending()
+                    .padding()
                 }
             }
             .navigationBarTitle("Home", displayMode: .inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
+                    Button(action: {
                         onOpenSettings()
-                    } label: {
+                    }) {
                         Image(systemName: "gearshape.fill")
                             .foregroundColor(.white)
                     }
                 }
-            }
-            .sheet(isPresented: $showNewsWeb) {
-                if let url = newsURL {
-                    NewsWebView(url: url)
-                } else {
-                    Text("No URL to load.")
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.black)
-                }
-            }
-            .sheet(item: $trendingDetailCoin) { coin in
-                CoinDetailView(coin: coin, homeVM: viewModel, tradeVM: tradeVM)
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
@@ -74,54 +50,41 @@ struct HomeView: View {
     
     var heroSection: some View {
         ZStack {
-            LinearGradient(
-                gradient: Gradient(colors: [.black, .gray]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .cornerRadius(10)
-            
-            VStack(spacing: 4) {
+            LinearGradient(gradient: Gradient(colors: [.black, .gray]),
+                           startPoint: .topLeading,
+                           endPoint: .bottomTrailing)
+                .cornerRadius(10)
+            VStack {
                 Text("Welcome to CryptoSage AI")
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.title2)
                     .foregroundColor(.white)
-                Text("Your Next-Gen Crypto Tools")
-                    .font(.footnote)
+                Text("Your next-gen crypto tools")
+                    .font(.subheadline)
                     .foregroundColor(.white.opacity(0.8))
             }
-            .padding(.vertical, 16)
+            .padding()
         }
         .frame(height: 80)
     }
     
     var portfolioSummaryCard: some View {
-        let totalValue: Double = 19290.0
-        let dailyChangePercent: Double = 2.83
-        let sign = dailyChangePercent >= 0 ? "+" : ""
-        
-        return CardView(cornerRadius: 6, paddingAmount: 8) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Your Portfolio Summary")
+        CardView {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Portfolio Summary")
                     .font(.headline)
                     .foregroundColor(.white)
-                
-                Text("Total Value: $\(totalValue, specifier: "%.2f")")
+                Text("Total Value: $19,290.00")
                     .foregroundColor(.white)
-                
-                Text("24h Change: \(sign)\(dailyChangePercent, specifier: "%.2f")%")
-                    .foregroundColor(dailyChangePercent >= 0 ? .green : .red)
-                
-                Button {
-                    // Switch to portfolio tab
-                    // e.g. appState.selectedTab = .portfolio
-                } label: {
-                    Text("View Full Portfolio")
-                        .font(.subheadline)
-                        .padding(6)
-                        .background(Color.blue.opacity(0.8))
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
+                Text("24h Change: +2.83%")
+                    .foregroundColor(.green)
+                Button("View Full Portfolio") {
+                    // Navigate to Portfolio tab if needed
                 }
+                .font(.subheadline)
+                .padding(8)
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(8)
             }
         }
     }
@@ -129,24 +92,15 @@ struct HomeView: View {
     var trendingSection: some View {
         Group {
             if !viewModel.trendingCoins.isEmpty {
-                CardView(cornerRadius: 6, paddingAmount: 4) {
-                    VStack(alignment: .leading, spacing: 6) {
+                CardView {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text("Trending")
                             .font(.headline)
                             .foregroundColor(.white)
-                        
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(viewModel.trendingCoins) { tcoin in
-                                    Button {
-                                        // fetchCoinByID if needed
-                                    } label: {
-                                        TrendingCard(item: MarketItem(
-                                            symbol: tcoin.symbol.uppercased(),
-                                            price: tcoin.price,
-                                            change: tcoin.priceChange24h
-                                        ))
-                                    }
+                            HStack {
+                                ForEach(viewModel.trendingCoins) { coin in
+                                    TrendingCard(item: MarketItem(symbol: coin.symbol.uppercased(), price: coin.price, change: coin.priceChange24h))
                                 }
                             }
                         }
@@ -157,46 +111,18 @@ struct HomeView: View {
     }
     
     var watchlistSection: some View {
-        CardView(cornerRadius: 6, paddingAmount: 4) {
-            VStack(alignment: .leading, spacing: 6) {
+        CardView {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("Your Watchlist")
                     .font(.headline)
                     .foregroundColor(.white)
-                Divider().background(Color.gray)
-                
                 if viewModel.isLoadingCoins {
-                    Text("Loading coin prices...")
+                    Text("Loading...")
                         .foregroundColor(.gray)
                 } else {
-                    if viewModel.watchlistCoins.isEmpty {
-                        Text("No watchlist coins found.")
-                            .foregroundColor(.gray)
-                    } else {
-                        ForEach(viewModel.watchlistCoins.indices, id: \.self) { index in
-                            let coin = viewModel.watchlistCoins[index]
-                            NavigationLink {
-                                CoinDetailView(coin: coin, homeVM: viewModel, tradeVM: tradeVM)
-                            } label: {
-                                VStack {
-                                    WatchlistRow(item: MarketItem(
-                                        symbol: coin.symbol.uppercased(),
-                                        price: coin.currentPrice ?? 0,
-                                        change: coin.priceChangePercentage24h ?? 0
-                                    ))
-                                    Divider().background(Color.gray.opacity(0.4))
-                                }
-                                .padding(.vertical, 1)
-                                .contentShape(Rectangle())
-                            }
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    viewModel.removeFromWatchlist(coinID: coin.coinGeckoID)
-                                    viewModel.refreshWatchlistData()
-                                } label: {
-                                    Text("Remove from Watchlist")
-                                    Image(systemName: "trash")
-                                }
-                            }
+                    ForEach(viewModel.watchlistCoins) { coin in
+                        NavigationLink(destination: CoinDetailView(coin: coin, homeVM: viewModel, tradeVM: tradeVM)) {
+                            WatchlistRow(item: MarketItem(symbol: coin.symbol.uppercased(), price: coin.currentPrice ?? 0, change: coin.priceChangePercentage24h ?? 0))
                         }
                     }
                 }
@@ -204,82 +130,56 @@ struct HomeView: View {
         }
     }
     
-    var topGainersSection: some View {
-        CardView(cornerRadius: 6, paddingAmount: 4) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Top Gainers")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                Divider().background(Color.gray)
-                
-                let topGainers = marketVM.marketCoins
-                    .sorted { ($0.priceChangePercentage24h ?? 0) > ($1.priceChangePercentage24h ?? 0) }
-                    .prefix(3)
-                
-                if topGainers.isEmpty {
-                    Text("No data yet.")
-                        .foregroundColor(.gray)
-                } else {
-                    ForEach(topGainers) { coin in
-                        let change = coin.priceChangePercentage24h ?? 0
-                        VStack {
-                            WatchlistRow(item: MarketItem(
-                                symbol: coin.symbol.uppercased(),
-                                price: coin.currentPrice ?? 0,
-                                change: change
-                            ))
-                            Divider().background(Color.gray.opacity(0.4))
-                        }
-                        .padding(.vertical, 1)
+    var chatSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("AI Chat")
+                .font(.headline)
+                .foregroundColor(.white)
+            ForEach(viewModel.messages) { message in
+                ChatBubble(message: message)
+            }
+            HStack {
+                TextEditor(text: $userInput)
+                    .frame(minHeight: 40, maxHeight: 80)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
+                    .focused($isInputFocused)
+                Button("Send") {
+                    if !userInput.trimmingCharacters(in: .whitespaces).isEmpty {
+                        viewModel.sendUserMessage(userInput)
+                        userInput = ""
                     }
                 }
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(8)
             }
         }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(8)
     }
     
     var newsSection: some View {
-        CardView(cornerRadius: 6, paddingAmount: 4) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Latest Crypto News (In-App)")
+        CardView {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Latest Crypto News")
                     .font(.headline)
                     .foregroundColor(.white)
-                
                 if viewModel.isLoadingNews {
                     Text("Loading news...")
                         .foregroundColor(.gray)
                 } else {
-                    if viewModel.news.isEmpty {
-                        Text("No news found.")
-                            .foregroundColor(.gray)
-                    } else {
-                        ForEach(viewModel.news) { news in
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(news.title)
-                                    .foregroundColor(.white)
-                                    .font(.subheadline)
-                                
-                                HStack {
-                                    Text(news.source)
-                                        .foregroundColor(.gray)
-                                        .font(.footnote)
-                                    Spacer()
-                                    
-                                    if let url = news.url, !url.absoluteString.isEmpty {
-                                        Button("Read More") {
-                                            self.newsURL = url
-                                            self.showNewsWeb = true
-                                        }
-                                        .foregroundColor(.blue)
-                                        .font(.footnote)
-                                    } else {
-                                        Text("No link available")
-                                            .foregroundColor(.gray)
-                                            .font(.footnote)
-                                    }
-                                }
-                            }
-                            Divider().background(Color.gray.opacity(0.4))
+                    ForEach(viewModel.news) { news in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(news.title)
+                                .foregroundColor(.white)
+                                .font(.subheadline)
+                            Text(news.source)
+                                .foregroundColor(.gray)
+                                .font(.footnote)
                         }
+                        Divider().background(Color.gray)
                     }
                 }
             }
@@ -287,35 +187,10 @@ struct HomeView: View {
     }
 }
 
-// Minimal web view
-struct NewsWebView: UIViewRepresentable {
-    let url: URL
-    
-    func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
-        let request = URLRequest(url: url)
-        webView.load(request)
-        return webView
-    }
-    
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
-}
-
-// Minimal coin detail
-struct CoinDetailView: View {
-    let coin: CoinGeckoCoin
-    @ObservedObject var homeVM: HomeViewModel
-    var tradeVM: TradeViewModel?
-    
-    var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            VStack {
-                Text("\(coin.symbol.uppercased()) Detail")
-                    .foregroundColor(.white)
-                // ...
-                Spacer()
-            }
+struct HomeView_Previews: PreviewProvider {
+    static var previews: some View {
+        HomeView(viewModel: HomeViewModel(), marketVM: MarketViewModel(), tradeVM: TradeViewModel()) {
+            print("Open Settings")
         }
     }
 }

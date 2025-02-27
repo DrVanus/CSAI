@@ -68,3 +68,13 @@ struct UserWallet: Identifiable, Codable {
     let address: String
     let label: String
 }
+
+struct ChatMessage: Identifiable {
+    let id = UUID()
+    let role: MessageRole
+    let content: String
+}
+
+enum MessageRole {
+    case user, assistant, system
+}

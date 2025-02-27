@@ -8,7 +8,6 @@
 import Foundation
 import Combine
 
-@available(iOS 16.0, *)
 class MarketViewModel: ObservableObject {
     @Published var marketCoins: [CoinGeckoCoin] = []
     @Published var isLoading: Bool = false
@@ -16,7 +15,7 @@ class MarketViewModel: ObservableObject {
     func fetchMarketCoins() {
         isLoading = true
         guard let url = URL(string:
-            "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=200&page=1&sparkline=false"
+            "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false"
         ) else { return }
         
         URLSession.shared.dataTask(with: url) { data, _, error in
